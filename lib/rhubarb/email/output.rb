@@ -30,9 +30,11 @@ class Rhubarb::Email::Output < Mail::Message
     @attachments_dir   = config['attachments_dir']
     @attachments_globs = config['attachments_globs']
     if @attachments_dir and @attachments_globs
-      @attachments_globs.each do |glob|
-        Dir.glob(File.join(@attachments_dir, glob)).each do |file|
-          self.add_file file
+      @attachments_dir.each do |dir|
+        @attachments_globs.each do |glob|
+          Dir.glob(File.join(dir, glob)).each do |file|
+            self.add_file file
+          end
         end
       end
     end
