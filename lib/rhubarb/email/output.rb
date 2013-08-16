@@ -1,12 +1,10 @@
 require 'redcarpet'
 
 class Rhubarb::Email::Output < Mail::Message
-  attr_reader :name, :attachments_dir, :attachments_globs
+  attr_reader :attachments_dir, :attachments_globs
 
   def initialize(config={})
     super()
-
-    @name              = config['name']
 
     self['subject']    = config['subject']
 
