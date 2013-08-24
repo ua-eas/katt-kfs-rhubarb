@@ -1,12 +1,25 @@
+# Red carpet is used to format the email messages.
 require 'redcarpet'
 
+# Internal: Rhubarb::Email::Output extends the Mail::Message class and is responsible
+#           for building and delivering an email message
+#
+# Instance Variables:
+# @attachments_dir   - The directory where we look for attachments
+# @attachments_globs - The globs representing which files to attach to the report
+#
 class Rhubarb::Email::Output < Mail::Message
-  attr_reader :name, :attachments_dir, :attachments_globs
 
+  # Public: Gets the attachments_dir and attachments_globs
+  attr_reader :attachments_dir, :attachments_globs
+
+  # Public: Initializes the Output object and actually builds the email message.
+  #
+  # config  - A hash with the output email configuration from the jobstream's email config
+  #           yaml file.
+  #
   def initialize(config={})
     super()
-
-    @name              = config['name']
 
     self['subject']    = config['subject']
 

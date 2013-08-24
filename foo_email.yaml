@@ -1,0 +1,38 @@
+---
+name: FOO
+outputs:
+  job_start:
+    subject: "DEV - UAF-FOO-DLV-EMAIL - FOO Started"
+    message: >
+      Starting job FOO,
+      there should be 
+      a follow-up email after this one.
+    to:
+    - SCOTT_SKINNER_ADDRESS
+    - JOSH_SHALOO_ADDRESS
+  job_ok:
+    subject: "DEV - UAF-FOO-DLV-EMAIL - FOO Complete"
+    message: >
+      A success email most likely will contain an
+      attached report for review by end users,
+      which is the 'preferred' outcome.
+    to:
+    - SCOTT_SKINNER_ADDRESS
+    - JOSH_SHALOO_ADDRESS
+    attachments_dir:
+    - /home/u00/env/kfs/opt/work/dev/kfs/reports/foo
+    attachments_globs:
+    - foo_report*.txt
+  job_not_ok:
+    subject: "DEV - UAF-FOO-DLV-EMAIL - Job Failed"
+    message: >
+      The job FOO has failed, 
+      attached is a log of events,
+      please see KFS logs for further detail.
+    to:
+    - SCOTT_SKINNER_ADDRESS
+    - JOSH_SHALOO_ADDRESS
+    attachments_dir:
+    - /home/u00/env/kfs/opt/work/dev/kfs/logs/foo
+    attachments_globs:
+    - foo*.log
