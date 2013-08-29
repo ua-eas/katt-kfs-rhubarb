@@ -10,7 +10,7 @@ describe Rhubarb::Email, "#deliver" do
   end
 
   before(:all) do
-    Rhubarb::Email.parse_addresses(File.join(File.dirname(__FILE__), 'addresses.yaml'))
+    email_deliverer = Rhubarb::Email.new
 
     js_archibus = <<ARCHIBUS
 ---
@@ -34,8 +34,8 @@ outputs:
     - HEATHER_LO_ADDRESS
 ARCHIBUS
 
-    @js           = Rhubarb::Email.parse_config(js_archibus)
-    @js_from_file = Rhubarb::Email.parse_config_file(File.join(File.dirname(__FILE__), 'archibus_email.yaml'))
+    @js           = email_deliverer.get_jobstream_from_text(js_archibus)
+    @js_from_file = email_deliverer.get_jobstream_by_name('archibus')
 
     js_archibus_w_attachments = <<ARCHIBUS
 ---
@@ -74,7 +74,7 @@ outputs:
     - roomImportErrorReport_*.txt
     - roomImportSuccessReport_*.txt
 ARCHIBUS
-    @js_w_attachments = Rhubarb::Email.parse_config(js_archibus_w_attachments)
+    @js_w_attachments = email_deliverer.get_jobstream_from_text(js_archibus_w_attachments)
   end
 
   after(:each) do

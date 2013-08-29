@@ -1,8 +1,16 @@
 require_relative 'spec_helper'
 
 describe Rhubarb::Email, "#parse_config" do
+  include Helpers
+
+  before(:each) do
+    cleanse_live
+    Rhubarb.stub(:batch_home).and_return(@stg_batch_home)
+  end
+
   before(:all) do
-    Rhubarb::Email.parse_addresses(File.join(File.dirname(__FILE__), 'addresses.yaml'))
+
+    email_deliverer = Rhubarb::Email.new
 
     js_archibus = <<ARCHIBUS
 ---
@@ -41,7 +49,7 @@ outputs:
     - roomImportErrorReport_*.txt
     - roomImportSuccessReport_*.txt
 ARCHIBUS
-    @js = Rhubarb::Email.parse_config(js_archibus)
+    @js = email_deliverer.get_jobstream_from_text(js_archibus)
   end
 
   it "should generate JobStream representing the whole job_stream, with a correct name" do

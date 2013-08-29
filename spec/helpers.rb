@@ -18,4 +18,7 @@ module Helpers
     # For writable tests
     FileUtils.chmod 0500, File.join(@live_dir, 'uaf-trn', 'control')
   end
+  def create_required_dirs
+    FileUtils.mkdir_p Rhubarb.batch_home
+  end
 end

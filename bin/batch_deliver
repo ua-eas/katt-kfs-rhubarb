@@ -24,15 +24,17 @@ class BatchDeliverer < Thor
 
   method_option :test, :type => :boolean, :desc => '"Send" emails rather than sending emails'
 
-  # Public: Duplicate some text an arbitrary number of times.
+  # Public: This is the main entry point of the batch_deliver script
   #
   # job_stream  - The email job stream object responsible for delivering the report
-  # report      - 
+  # report      - The name of the output you are attempting to deliver.
   #
   # Returns nothing. Exits with the expected status code of 0 if everything runs ok.
-  def deliver(job_stream, report)
-    Rhubarb::Email.parse_addresses(File.join(File.dirname(__FILE__), '..', 'addresses.yaml'))
-    job_stream = Rhubarb::Email.parse_config_file(File.join(File.dirname(__FILE__), '..', "#{job_stream}_email.yaml"))
+  def deliver(job_stream_name, report)
+
+    email_deliverer = Rhubarb::Email.new
+
+    job_stream = email_deliverer.get_jobstream_by_name(job_stream_name)
 
     if options[:test]
       job_stream.set_delivery_method :test
