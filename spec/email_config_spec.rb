@@ -25,9 +25,9 @@ describe Rhubarb::Email, "#parse_config" do
 name: ARCHIBUS
 outputs:
   job_not_ok:
-    subject: "DEV - UAF-FOO-DLV-EMAIL - Job Failed"
+    subject: "ENV - UAF-FOO-DLV-EMAIL - Job Failed"
     message: |
-      The job FOO has failed, 
+      The job FOO has failed on DATE, 
       attached is a log of events,
       please see KFS logs for further detail.
     to: 
@@ -38,7 +38,7 @@ outputs:
     attachments_globs:
     - GlobFileFilter: [foo_*.log, bar_*.log]
   job_ok:
-    subject: "DEV - UAF-FOO-DLV-EMAIL - Job Success"
+    subject: "ENV - UAF-FOO-DLV-EMAIL - Job Success"
     message: |
       The job FOO has finished successfully.
     to: 
@@ -82,7 +82,10 @@ ARCHIBUS
     expected =  "The job FOO has finished successfully.\n"
     @js.outputs['job_ok'].text_part.body.to_s.should == "The job FOO has finished successfully.\n"
 
-    expected =  "The job FOO has failed, \nattached is a log of events,\n"
+    date = Time.new
+    date = date.strftime("%m/%d/%Y")
+
+    expected =  "The job FOO has failed on #{date}, \nattached is a log of events,\n"
     expected += "please see KFS logs for further detail.\n"
     @js.outputs['job_not_ok'].text_part.body.to_s.should == expected
   end

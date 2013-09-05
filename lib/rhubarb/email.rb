@@ -122,9 +122,10 @@ class Rhubarb::Email
 
     addresses_file = get_email_config_dir + '/addresses/'
     if ENV['RHUBARB_ENV']
-      addresses_file = ENV['RHUBARB_ENV'] + '_'
+      addresses_file +=  'addresses_' + ENV['RHUBARB_ENV'].downcase + '.yaml'
+    else
+      addresses_file +=  'addresses.yaml'
     end
-    addresses_file += 'addresses.yaml'
   end
 
   # Internal: Find the config file for a jobstream

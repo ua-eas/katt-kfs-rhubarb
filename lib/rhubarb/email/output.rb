@@ -10,6 +10,8 @@ require 'redcarpet'
 #
 class Rhubarb::Email::Output < Mail::Message
 
+  include Rhubarb::TokenParser
+
   # Public: Gets the attachments_dir and attachments_globs
   attr_reader :attachment_dirs, :attachments_files, :config, :name, :jobstream
 
@@ -31,9 +33,12 @@ class Rhubarb::Email::Output < Mail::Message
     @name      = args[:target_name]
     @jobstream = args[:jobstream]
 
-    self['subject'] = @config['subject']
+    subject = @config['subject']
+    subject = replace_tokens subject
+    self['subject'] = subject
 
     message = @config['message']
+    message = replace_tokens message
 
     self.text_part do
       body message
@@ -53,7 +58,7 @@ class Rhubarb::Email::Output < Mail::Message
     self['to']         = recipients.join(',')
 
     if @config['attachment_dirs'] && @config['attachments_globs']
-      
+
       @attachment_dirs = @config['attachment_dirs']
       @attachment_files = get_attachment_files
       
