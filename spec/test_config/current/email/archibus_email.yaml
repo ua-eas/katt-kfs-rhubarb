@@ -10,8 +10,3 @@ outputs:
     to:
     - KATT_AUTOMATION_ADDRESS
     - KFS_BSA_ADDRESS
-    attachments_globs:
-    - buildingImportErrorReport_*.txt
-    - buildingImportSuccessReport_*.txt
-    - roomImportErrorReport_*.txt
-    - roomImportSuccessReport_*.txt

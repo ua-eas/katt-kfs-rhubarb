@@ -18,7 +18,41 @@ module Helpers
     # For writable tests
     FileUtils.chmod 0500, File.join(@live_dir, 'uaf-trn', 'control')
   end
-  def create_required_dirs
-    FileUtils.mkdir_p Rhubarb.batch_home
+  def add_test_reports
+
+    report_dir = Rhubarb.batch_home + '/reports/fooeinvoice'
+    FileUtils.mkdir_p report_dir
+
+    FileUtils.touch [ 
+      report_dir + "/foo_1.log", 
+      report_dir + "/foo_2.log", 
+      report_dir + "/foo_3.log", 
+      report_dir + "/foo_4.log"
+    ]
+    FileUtils.touch [ 
+      report_dir + "/bar_1.log", 
+      report_dir + "/bar_2.log", 
+      report_dir + "/bar_3.log", 
+      report_dir + "/bar_4.log"
+    ]
+    FileUtils.touch [ 
+      report_dir + "/baz_1.log", 
+      report_dir + "/baz_2.log", 
+      report_dir + "/baz_3.log", 
+      report_dir + "/baz_4.log"
+    ]
+
+    #add a tracking file for one of the baz reports to simulate tracking
+    FileUtils.touch Rhubarb.batch_home + '/tracking/emailed/reports/ARCHIBUS/baz_1.log.emailed'
+
+  end
+  def cleanup_email_tracking_files
+    #clean up the fake reports
+    FileUtils.rm_rf Rhubarb.batch_home + '/reports/fooeinvoice'
+    #clean up tracking files
+    FileUtils.rm Rhubarb.batch_home + '/tracking/emailed/reports/ARCHIBUS/baz_1.log.emailed'
+    FileUtils.rm Rhubarb.batch_home + '/tracking/emailed/reports/ARCHIBUS/baz_2.log.emailed'
+    FileUtils.rm Rhubarb.batch_home + '/tracking/emailed/reports/ARCHIBUS/baz_3.log.emailed'
+    FileUtils.rm Rhubarb.batch_home + '/tracking/emailed/reports/ARCHIBUS/baz_4.log.emailed'
   end
 end

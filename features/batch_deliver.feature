@@ -38,3 +38,14 @@ Feature: The batch_deliver binary
     Examples:
       | JobStream | Target     |
       | archibus  | all        |
+
+  Scenario Outline: Deliver a batch report with attachments using the glob attachment filter classes
+    When I run the command "bin/batch_deliver <JobStream> <Target> --test"
+    Then the command should return successfully
+      And  I should not see anything on stderr
+      And  a report should be fake delivered to "katt-automation@list.arizona.edu"
+
+    Examples:
+      | JobStream | Target     |
+      | einvoice  | job_not_ok |      
+      | einvoice  | job_ok     |

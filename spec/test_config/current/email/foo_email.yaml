@@ -19,10 +19,10 @@ outputs:
     to:
     - SCOTT_SKINNER_ADDRESS
     - JOSH_SHALOO_ADDRESS
-    attachments_dir:
+    attachment_dirs:
     - /home/u00/env/kfs/opt/work/dev/kfs/reports/foo
     attachments_globs:
-    - foo_report*.txt
+    - GlobFileFilter: [foo_report*.txt]
   job_not_ok:
     subject: "DEV - UAF-FOO-DLV-EMAIL - Job Failed"
     message: >
@@ -32,7 +32,7 @@ outputs:
     to:
     - SCOTT_SKINNER_ADDRESS
     - JOSH_SHALOO_ADDRESS
-    attachments_dir:
+    attachment_dirs:
     - /home/u00/env/kfs/opt/work/dev/kfs/logs/foo
     attachments_globs:
-    - foo*.log
+    - GlobFileFilter: [foo*.log]

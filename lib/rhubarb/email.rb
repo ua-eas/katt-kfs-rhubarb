@@ -144,3 +144,6 @@ end
 
 require_relative 'email/job_stream'
 require_relative 'email/output'
+require_relative 'email/attachments/file_filter_base'
+require_relative 'email/attachments/glob_file_filter'
+require_relative 'email/attachments/glob_file_filter_tracker'

@@ -80,6 +80,46 @@ module Rhubarb
   # exists, but is not writable by the current user.
   class UnwritableControlDirectoryError < StandardError
   end
+
+  module TokenParser
+
+    def get_token_map 
+      @token_map ||= build_token_map
+    end
+
+    def build_token_map
+      @token_map = {
+        'ENV'        => get_env_value,
+        'DATE'       => get_date_value,
+        'TIME'       => get_time_value,
+        'BATCH_HOME' => Rhubarb.batch_home
+      }
+    end
+
+    def get_env_value 
+      @@rhubarb_env ||= ENV['RHUBARB_ENV']
+    end
+
+    def get_date_value 
+      time = Time.new
+      time.strftime("%m/%d/%Y")
+    end
+
+    def get_time_value
+      time = Time.new
+      time.strftime("%H:%M:%S")
+    end
+
+    def replace_tokens( target_string = '' )
+      tokens = get_token_map
+
+      tokens.each { | token, value |
+        target_string = target_string.gsub( %r{#{token}}, "#{value}" )
+      }
+      return target_string
+    end
+  end
+
 end
 
 require_relative 'rhubarb/logger'
