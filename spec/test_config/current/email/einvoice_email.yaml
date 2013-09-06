@@ -1,0 +1,28 @@
+---
+name: EINVOICE
+outputs:
+  job_not_ok:
+    subject: "DEV - UAF-FOO-DLV-EMAIL - Job Failed"
+    message: |
+      The job FOO has failed, 
+      attached is a log of events,
+      please see KFS logs for further detail.
+    to: 
+    - KATT_AUTOMATION_ADDRESS
+    - JOSH_SHALOO_ADDRESS
+    attachment_dirs:
+    - BATCH_HOME/reports/fooeinvoice
+    attachments:
+    - GlobFileFilter: [foo_*.log, bar_*.log]
+  job_ok:
+    subject: "DEV - UAF-FOO-DLV-EMAIL - Job Success"
+    message: |
+      The job FOO has finished successfully.
+    to: 
+    - KATT_AUTOMATION_ADDRESS
+    - JOSH_SHALOO_ADDRESS
+    attachment_dirs:
+    - BATCH_HOME/reports/fooeinvoice
+    attachments:
+    - GlobFileFilter: [foo_*.log, bar_*.log]
+    - GlobFileFilterTracker: [ARCHIBUSFOO_baz_*.log]

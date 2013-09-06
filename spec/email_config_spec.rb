@@ -1,65 +1,98 @@
 require_relative 'spec_helper'
 
-describe Rhubarb::Email, "#parse_config" do
-  before(:all) do
-    Rhubarb::Email.parse_addresses(File.join(File.dirname(__FILE__), 'addresses.yaml'))
 
-    js_archibus = <<ARCHIBUS
----
-name: ARCHIBUS
-output:
-  name: report
-  subject: "DEV - UAF-ARCHB-DLV-LOADRPT - Archibus Processing Information - Capital Assets Team Review"
-  message: >
-    Attached are the reports that show the results and provide information on
-    building/room records successfully updated and any error conditions found,
-    if any, as a result of any Archibus files that were processed for the day.
-  to:
-  - KATT_AUTOMATION_ADDRESS
-  - KFS_BSA_ADDRESS
-  attachments_dir: "#{File.join(File.expand_path(File.dirname(__FILE__)), 'attachments')}"
-  attachments_globs:
-  - buildingImportErrorReport_*.txt
-  - buildingImportSuccessReport_*.txt
-  - roomImportErrorReport_*.txt
-  - roomImportSuccessReport_*.txt
-ARCHIBUS
-    @js = Rhubarb::Email.parse_config(js_archibus)
+describe Rhubarb::Email, "#parse_config" do
+  include Helpers
+
+
+
+  before(:each) do
+    cleanse_live
+    Rhubarb.stub(:batch_home).and_return(@stg_batch_home)
+
   end
 
+  before(:all) do
+
+    debugger
+
+    add_test_reports
+
+    email_deliverer = Rhubarb::Email.new('ARCHIBUSFOO')
+
+    @js = email_deliverer.get_jobstream
+  end
+
+  after(:all) do
+    cleanup_email_tracking_files
+  end
+
+
   it "should generate JobStream representing the whole job_stream, with a correct name" do
-    @js.name.should == "ARCHIBUS"
+    @js.name.should == "ARCHIBUSFOO"
   end
 
   it "should generate JobStream representing the whole job_stream, with a correct Output" do
-    @js.outputs['report'].should_not be nil
+    @js.outputs['job_not_ok'].should_not be nil
+    @js.outputs['job_ok'].should_not be nil
   end
 
   it "should generate Output with a correct name" do
-    @js.outputs['report'].name.should == "report"
+    @js.outputs['job_ok'].name.should == "job_ok"
+    @js.outputs['job_not_ok'].name.should == "job_not_ok"
   end
 
   it "should generate Output with a correct subject" do
-    @js.outputs['report'].subject.should == "DEV - UAF-ARCHB-DLV-LOADRPT - Archibus Processing Information - Capital Assets Team Review"
+    @js.outputs['job_ok'].subject.should == "DEV - UAF-FOO-DLV-EMAIL - Job Success"
+    @js.outputs['job_not_ok'].subject.should == "DEV - UAF-FOO-DLV-EMAIL - Job Failed"
   end
 
   it "should generate Output with a correct message" do
-    @js.outputs['report'].text_part.body.to_s.should == "Attached are the reports that show the results and provide information on building/room records successfully updated and any error conditions found, if any, as a result of any Archibus files that were processed for the day.\n"
+
+    expected =  "The job FOO has finished successfully.\n"
+    @js.outputs['job_ok'].text_part.body.to_s.should == "The job FOO has finished successfully.\n"
+
+    date = Time.new
+    date = date.strftime("%m/%d/%Y")
+
+    expected =  "The job FOO has failed on #{date}, \nattached is a log of events,\n"
+    expected += "please see KFS logs for further detail.\n"
+    @js.outputs['job_not_ok'].text_part.body.to_s.should == expected
   end
 
   it "should generate Output with correct to entries" do
-    @js.outputs['report']['to'].to_s.should include("katt-automation@list.arizona.edu")
-    @js.outputs['report']['to'].to_s.should include("kfsbsa@list.arizona.edu")
+    @js.outputs['job_ok']['to'].to_s.should include("katt-automation@list.arizona.edu")
+    @js.outputs['job_ok']['to'].to_s.should include("shaloo@email.arizona.edu")
+    @js.outputs['job_not_ok']['to'].to_s.should include("katt-automation@list.arizona.edu")
+    @js.outputs['job_not_ok']['to'].to_s.should include("shaloo@email.arizona.edu")
   end
 
   it "should generate an Output with correct attachments globs" do
-    @js.outputs['report'].attachments_globs.should include("buildingImportErrorReport_*.txt")
-    @js.outputs['report'].attachments_globs.should include("buildingImportSuccessReport_*.txt")
-    @js.outputs['report'].attachments_globs.should include("roomImportErrorReport_*.txt")
-    @js.outputs['report'].attachments_globs.should include("roomImportSuccessReport_*.txt")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("foo_1.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("foo_2.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("foo_3.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("foo_4.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("bar_1.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("bar_2.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("bar_3.log")
+    @js.outputs['job_not_ok'].attachments.map(&:filename).should include("bar_4.log")
+
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("foo_1.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("foo_2.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("foo_3.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("foo_4.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("bar_1.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("bar_2.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("bar_3.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("bar_4.log")
+    # the helper creates a tracking file for baz_1.log so this should not be included!
+    @js.outputs['job_ok'].attachments.map(&:filename).should_not include("ARCHIBUSFOO_baz_1.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("ARCHIBUSFOO_baz_2.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("ARCHIBUSFOO_baz_3.log")
+    @js.outputs['job_ok'].attachments.map(&:filename).should include("ARCHIBUSFOO_baz_4.log")
   end
 
-  it "should generate an Output with correct attached files" do
-    @js.outputs['report'].attachments.map(&:filename).should include("buildingImportErrorReport_1.txt")
+  it "should generate multiple Outputs" do
+    @js.outputs.count.should == 2
   end
 end

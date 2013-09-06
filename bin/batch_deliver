@@ -1,4 +1,20 @@
 #!/usr/bin/env ruby
+# Public: This is the main executable and public interface to the batch deliver functionality
+#         of Rhubarb. It's inteded use is to deliver an email report of some kind about some 
+#         status of a Job Stream and or reports as attachments based on the job stream 
+#         email template yaml files.
+#
+# Arguments:
+# JOBSTREAM - Required. The name of the job stream
+# REPORT    - Required. The name of the output we are targeting from the email template yaml file
+#
+# Examples
+#   
+#   batch_deliver archibus job_ok
+#   batch_deliver archibus job_not_ok
+#   batch_deliver archibus all
+#
+# This should exit with a status code of 0 if everything works ok.
 require 'thor'
 
 require File.join(File.dirname(File.expand_path(__FILE__)), '..', 'lib', 'rhubarb')
@@ -8,15 +24,23 @@ class BatchDeliverer < Thor
 
   method_option :test, :type => :boolean, :desc => '"Send" emails rather than sending emails'
 
-  def deliver(job_stream, report)
-    Rhubarb::Email.parse_addresses(File.join(File.dirname(__FILE__), '..', 'addresses.yaml'))
-    job_stream_hash = Rhubarb::Email.parse_config_file(File.join(File.dirname(__FILE__), '..', "#{job_stream}_email.yaml"))
+  # Public: This is the main entry point of the batch_deliver script
+  #
+  # job_stream  - The email job stream object responsible for delivering the report
+  # report      - The name of the output you are attempting to deliver.
+  #
+  # Returns nothing. Exits with the expected status code of 0 if everything runs ok.
+  def deliver(job_stream_name, report)
+
+    email_deliverer = Rhubarb::Email.new(job_stream_name)
+
+    job_stream = email_deliverer.get_jobstream
 
     if options[:test]
-      job_stream_hash.outputs[report].delivery_method :test
-      puts job_stream_hash.deliver report
+      job_stream.set_delivery_method :test
+      puts job_stream.deliver report
     else
-      job_stream_hash.deliver report
+      job_stream.deliver report
     end
 
     # TODO exit something proper

@@ -7,6 +7,7 @@ gem 'thor'
 gem 'icalendar'
 gem 'redcarpet'
 
+
 group :test do
   gem 'rspec'
   gem 'cucumber'
@@ -19,4 +20,12 @@ group :test do
     gem 'libnotify'
     gem 'rb-inotify', :require => false
   end
+end
+
+group :development do
+  gem 'debugger'
+end
+
+group :deploy do
+  gem 'capistrano', '~> 3.0.0.pre13'
 end

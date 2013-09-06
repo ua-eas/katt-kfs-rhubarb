@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-describe Rhubarb::Email, "#deliver" do
+describe Rhubarb::Email, ".new" do
   include Helpers
   include Mail::Matchers
 
@@ -10,65 +10,32 @@ describe Rhubarb::Email, "#deliver" do
   end
 
   before(:all) do
-    Rhubarb::Email.parse_addresses(File.join(File.dirname(__FILE__), 'addresses.yaml'))
 
-    js_archibus = <<ARCHIBUS
----
-name: ARCHIBUS
-output:
-  name: report
-  subject: "DEV - UAF-ARCHB-DLV-LOADRPT - Archibus Processing Information - Capital Assets Team Review"
-  message: >
-    Attached are the reports that show the results and provide information on
-    building/room records successfully updated and any error conditions found,
-    if any, as a result of any Archibus files that were processed for the day.
-  to:
-  - SAM_RAWLINS_ADDRESS
-  - HEATHER_LO_ADDRESS
-ARCHIBUS
-    @js           = Rhubarb::Email.parse_config(js_archibus)
-    @js_from_file = Rhubarb::Email.parse_config_file(File.join(File.dirname(__FILE__), 'archibus_email.yaml'))
+    debugger
 
-    js_archibus_w_attachments = <<ARCHIBUS
----
-name: ARCHIBUS
-output:
-  name: report
-  subject: "DEV - UAF-ARCHB-DLV-LOADRPT - Archibus Processing Information - Capital Assets Team Review"
-  message: >
-    Attached are the reports that show the results and provide information on
-    building/room records successfully updated and any error conditions found,
-    if any, as a result of any Archibus files that were processed for the day.
-  to:
-  - SAM_RAWLINS_ADDRESS
-  - HEATHER_LO_ADDRESS
-  attachments_dir: "#{File.join(File.expand_path(File.dirname(__FILE__)), 'attachments')}"
-  attachments_globs:
-  - buildingImportErrorReport_*.txt
-  - buildingImportSuccessReport_*.txt
-  - roomImportErrorReport_*.txt
-  - roomImportSuccessReport_*.txt
-ARCHIBUS
-    @js_w_attachments = Rhubarb::Email.parse_config(js_archibus_w_attachments)
+    email_deliverer_from_file = Rhubarb::Email.new('archibus')
+    email_deliverer_w_attachments = Rhubarb::Email.new('einvoice')
+
+    @js_from_file = email_deliverer_from_file.get_jobstream
+    @js_w_attachments = email_deliverer_w_attachments.get_jobstream
   end
 
   after(:each) do
-    @js.outputs['report'].delivery_method :smtp
-    @js_from_file.outputs['report'].delivery_method :smtp
-    @js_w_attachments.outputs['report'].delivery_method :smtp
+    @js_from_file.set_delivery_method :smtp
+    
     Mail::TestMailer.deliveries.clear
   end
 
   it "should deliver a basic report for realsies", :email_for_real => true do
-    @js.deliver 'report'
+    @js_from_file.deliver 'foo'
   end
 
   it "should deliver a basic report for realsies from a config file", :email_for_real => true do
-    @js_from_file.deliver 'report'
+    @js_from_file.deliver 'foo'
   end
 
   it "should deliver a report w/ attachments for realsies", :email_for_real => true do
-    @js_w_attachments.deliver 'report'
+    @js_w_attachments.deliver 'foo'
   end
 
   context "not really delivering" do
@@ -76,19 +43,26 @@ ARCHIBUS
       cleanse_live
       Rhubarb.stub(:batch_home).and_return(@stg_batch_home)
 
-      @js.outputs['report'].delivery_method :test
-      @js_from_file.outputs['report'].delivery_method :test
+      @js_from_file.set_delivery_method :test
+      @js_w_attachments.set_delivery_method :test
+      
     end
 
-    it "should deliver a basic report" do
-      @js.deliver 'report'
-      should have_sent_email.to("srawlins@email.arizona.edu")
+    it "should deliver a basic report for a single output" do
+      @js_from_file.deliver 'foo'
+      @js_from_file.should have_sent_email.to("kfsbsa@list.arizona.edu")
+    end
+
+    it "should deliver a report for all outputs" do
+      @js_w_attachments.deliver 'all'
+      @js_w_attachments.should have_sent_email.to("shaloo@email.arizona.edu")
+      @js_w_attachments.should have_sent_email.to("katt-automation@list.arizona.edu")
     end
 
     it "should deliver a basic report from a config file" do
-      @js_from_file.deliver 'report'
-      should have_sent_email.to("katt-automation@list.arizona.edu")
-      should have_sent_email.to("kfsbsa@list.arizona.edu")
+      @js_from_file.deliver 'foo'
+      @js_from_file.should have_sent_email.to("katt-automation@list.arizona.edu")
+      @js_from_file.should have_sent_email.to("kfsbsa@list.arizona.edu")
     end
   end
 end
